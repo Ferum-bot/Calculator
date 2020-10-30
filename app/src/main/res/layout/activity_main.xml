@@ -11,14 +11,14 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:id="@+id/baseLinearLayout"
-        android:weightSum="13"
+        android:weightSum="14"
         >
 
         <TextView
             android:id="@+id/mainShowingView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="3"
+            android:layout_weight="4"
             android:text=""
             android:gravity="center_horizontal"
             android:fontFamily="casual"
@@ -28,49 +28,131 @@
             />
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="horizontal"
             android:id="@+id/firstLinearLayout"
-            android:layout_weight="2"
+            style="@style/defaultStyleForLinearLayout"
             >
 
+            <Button
+                android:id="@+id/clearCurrentExpression"
+                style="@style/defaultStyleForButtons"
+                android:text="AC" />
+
+            <Button
+                android:id="@+id/button2"
+                style="@style/defaultStyleForButtons"
+                android:text="не работает" />
+
+            <Button
+                android:id="@+id/button1"
+                style="@style/defaultStyleForButtons"
+                android:text="не работает" />
+            <Button
+                style="@style/defaultStyleForButtons"
+                android:id="@+id/division"
+                android:text="/"
+                />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="2"
             android:id="@+id/secondLinearLayout"
-            android:orientation="horizontal">
+            style="@style/defaultStyleForLinearLayout">
 
+            <Button
+                android:id="@+id/digitSeven"
+                style="@style/defaultStyleForButtons"
+                android:text="7" />
+
+            <Button
+                android:id="@+id/digitEight"
+                style="@style/defaultStyleForButtons"
+                android:text="8" />
+
+            <Button
+                android:id="@+id/digitNine"
+                style="@style/defaultStyleForButtons"
+                android:text="9" />
+
+            <Button
+                android:id="@+id/multiply"
+                style="@style/defaultStyleForButtons"
+                android:text="x" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="2"
             android:id="@+id/thirdLinearLayout"
-            android:orientation="horizontal">
+            style="@style/defaultStyleForLinearLayout"
+            >
 
+            <Button
+                android:id="@+id/digitFour"
+                style="@style/defaultStyleForButtons"
+                android:text="4" />
+
+            <Button
+                android:id="@+id/digitFive"
+                style="@style/defaultStyleForButtons"
+                android:text="5" />
+
+            <Button
+                android:id="@+id/digitSix"
+                style="@style/defaultStyleForButtons"
+                android:text="6" />
+
+            <Button
+                android:id="@+id/subtraction"
+                style="@style/defaultStyleForButtons"
+                android:text="-" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="2"
             android:id="@+id/fourthLinearLayout"
-            android:orientation="horizontal">
+            style="@style/defaultStyleForLinearLayout"
+            >
 
+            <Button
+                android:id="@+id/digitOne"
+                style="@style/defaultStyleForButtons"
+                android:text="1" />
+
+            <Button
+                android:id="@+id/digitTwo"
+                style="@style/defaultStyleForButtons"
+                android:text="2" />
+
+            <Button
+                android:id="@+id/digitThree"
+                style="@style/defaultStyleForButtons"
+                android:text="3" />
+
+            <Button
+                android:id="@+id/plus"
+                style="@style/defaultStyleForButtons"
+                android:text="+" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="2"
             android:id="@+id/fifthLinearLayout"
-            android:orientation="horizontal">
+            android:layout_marginBottom="8dp"
+            style="@style/defaultStyleForLinearLayout">
+            <Button
+                android:id="@+id/button20"
+                style="@style/defaultStyleForButtons"
+                android:text="не работает" />
 
+            <Button
+                android:id="@+id/button19"
+                style="@style/defaultStyleForButtons"
+                android:text="не работает" />
+
+            <Button
+                android:id="@+id/button18"
+                style="@style/defaultStyleForButtons"
+                android:text="не работает" />
+
+            <Button
+                android:id="@+id/execute"
+                style="@style/defaultStyleForButtons"
+                android:text="=" />
         </LinearLayout>
 
 
