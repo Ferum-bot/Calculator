@@ -13,6 +13,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var currentValue: String
 
+    private lateinit var buttonDigitZero: Button
     private lateinit var buttonDigitOne: Button
     private lateinit var buttonDigitTwo: Button
     private lateinit var buttonDigitThree: Button
@@ -28,8 +29,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonMinus: Button
     private lateinit var buttonDivision: Button
     private lateinit var buttonMultiply: Button
+    private lateinit var buttonOst: Button
 
     private lateinit var clearExpression: Button
+    private lateinit var deleteLastDigit: Button
+    private lateinit var addPoint: Button
 
     private lateinit var mainTextView: TextView
 
@@ -41,12 +45,8 @@ class MainActivity : AppCompatActivity() {
         currentValue = ""
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
-
     private fun setAllButtons(): List<Button> {
+        buttonDigitZero = findViewById(R.id.digitZero)
         buttonDigitOne = findViewById(R.id.digitOne)
         buttonDigitTwo = findViewById(R.id.digitTwo)
         buttonDigitThree = findViewById(R.id.digitThree)
@@ -62,16 +62,29 @@ class MainActivity : AppCompatActivity() {
         buttonMinus = findViewById(R.id.subtraction)
         buttonPlus = findViewById(R.id.plus)
         buttonMultiply = findViewById(R.id.multiply)
+        buttonOst = findViewById(R.id.remainder)
+
 
         clearExpression = findViewById(R.id.clearCurrentExpression)
+        deleteLastDigit = findViewById(R.id.delete)
+        addPoint = findViewById(R.id.point)
 
         mainTextView = findViewById(R.id.mainShowingView)
 
         return listOf<Button>(buttonDigitOne, buttonDigitTwo, buttonMultiply, buttonPlus, buttonMinus, buttonDivision, buttonExecute, buttonDigitEight,
-        buttonDigitSeven, buttonDigitFive, buttonDigitFour, buttonDigitNine, buttonDigitSix, buttonDigitThree, clearExpression)
+        buttonDigitSeven, buttonDigitFive, buttonDigitFour, buttonDigitNine, buttonDigitSix, buttonDigitThree, clearExpression, deleteLastDigit, buttonDigitZero,
+        buttonOst, addPoint)
     }
 
     private fun addSignToValue(sign: Char) {
+        if (currentValue == "0") {
+            currentValue = "$sign"
+            return
+        }
+        if (currentValue == "Infinity") {
+            currentValue = "$sign"
+            return
+        }
         currentValue += sign
         mainTextView.text = currentValue
     }
@@ -86,6 +99,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkForCorrectValue() : Boolean {
         val n = currentValue.length
+        if (currentValue[n - 1] == '*' || currentValue[n - 1] == '/' || currentValue[n - 1] == '%') {
+            return false
+        }
         for (i in 1 until n) {
             if (isSign(currentValue[i]) && isSign(currentValue[i - 1])) {
                 return false
@@ -108,29 +124,29 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun getLeftOperand(array: MutableList<String?>, pos: Int): Int {
+    private fun getLeftOperand(array: MutableList<String?>, pos: Int): Double {
         for (i in pos - 1 downTo 0) {
             if (array[i] != null) {
-                return array[i]!!.toInt()
+                return array[i]!!.toDouble()
             }
         }
-        return 0
+        return 0.0
     }
 
-    private fun getRightOperand(array: MutableList<String?>, pos: Int): Int {
+    private fun getRightOperand(array: MutableList<String?>, pos: Int): Double {
         for (i in pos + 1 until array.size) {
             if (array[i] != null) {
-                return array[i]!!.toInt()
+                return array[i]!!.toDouble()
             }
         }
-        return 0
+        return 0.0
     }
 
     private fun setLeftOperandToNull(array: MutableList<String?>, pos: Int): Unit {
         for (i in pos - 1 downTo 0) {
             if (array[i] != null) {
                 array[i] = null
-                break
+                return
             }
         }
     }
@@ -139,7 +155,7 @@ class MainActivity : AppCompatActivity() {
         for (i in pos + 1 until  array.size) {
             if (array[i] != null) {
                 array[i] = null
-                break
+                return
             }
         }
     }
@@ -211,8 +227,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun deleteLastSign() {
+        if (currentValue.isEmpty()) {
+            return
+        }
+        if (currentValue.length == 1) {
+            currentValue = ""
+            mainTextView.text = "0"
+            return
+        }
+        var result = ""
+        for (i in 0 until currentValue.length - 1) {
+            result += currentValue[i]
+        }
+        currentValue = result
+        mainTextView.text = currentValue
+    }
+
     private fun doSomeAction(currentButton: View) {
         when(currentButton.id) {
+            R.id.digitZero -> addSignToValue('0')
             R.id.digitOne -> addSignToValue('1')
             R.id.digitTwo -> addSignToValue('2')
             R.id.digitThree -> addSignToValue('3')
@@ -226,6 +260,9 @@ class MainActivity : AppCompatActivity() {
             R.id.division -> addSignToValue('/')
             R.id.subtraction -> addSignToValue('-')
             R.id.multiply -> addSignToValue('*')
+            R.id.remainder -> addSignToValue('%')
+            R.id.point -> addSignToValue('.')
+            R.id.delete -> deleteLastSign()
             R.id.clearCurrentExpression -> {
                 currentValue = ""
                 mainTextView.text = "0"
