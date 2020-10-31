@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        currentValue = ""
+        currentValue = "0"
     }
 
     override fun onStart() {
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val currentButtons = setAllButtons()
-        TextViewCompat.setAutoSizeTextTypeWithDefaults(mainTextView, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
+        //TextViewCompat.setAutoSizeTextTypeWithDefaults(mainTextView, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
         clickListener = View.OnClickListener { doSomeAction(it) }
         for (button in currentButtons) {
             button.setOnClickListener(clickListener)
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addSignToValue(sign: Char): Unit {
-        if (currentValue.length > 28) {
+        if (currentValue.length > 20) {
             Toast.makeText(this, "Too large Expression", Toast.LENGTH_SHORT).show()
             return
         }
@@ -155,16 +155,47 @@ class MainActivity : AppCompatActivity() {
                 mainTextView.text = currentValue
                 return
             }
+            if (isSign(sign)) {
+                currentValue = "$sign"
+                mainTextView.text = currentValue
+                return
+            }
+        }
+        if (!checkForCorrectAdd(sign)) {
+            return
         }
         currentValue += sign
         mainTextView.text = currentValue
+    }
+
+    private fun checkForCorrectAdd(char: Char): Boolean {
+        val lastChar = currentValue[currentValue.length - 1]
+        if ((isSign(char) || isPoint(char)) && (isPoint(lastChar) || isSign(lastChar))) {
+            return false
+        }
+        var lastSignIsPoint = false
+        var currentPos = currentValue.length - 1
+        while (currentPos >= 0) {
+            if (isPoint(currentValue[currentPos])) {
+                lastSignIsPoint = true
+                break
+            }
+            if (isSign(currentValue[currentPos])) {
+                break
+            }
+            currentPos--
+        }
+        if (lastSignIsPoint && isPoint(char)) {
+            return false
+        }
+        return true
     }
 
     private fun solveTheValue() {
         if (!checkForCorrect()) {
             Toast.makeText(this, "INVALID EXPRESSION", Toast.LENGTH_SHORT).show()
             mainTextView.text = resources.getString(R.string.mainError)
-            currentValue = ""
+            currentValue = "0"
             return
         }
         val currentExpression = mutableListOf<String?>("0")
