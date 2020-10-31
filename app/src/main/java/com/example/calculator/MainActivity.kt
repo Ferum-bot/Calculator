@@ -45,7 +45,21 @@ class MainActivity : AppCompatActivity() {
         currentValue = ""
     }
 
+    override fun onStart() {
+        super.onStart()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val currentButtons = setAllButtons()
+        clickListener = View.OnClickListener { doSomeAction(it) }
+        for (button in currentButtons) {
+            button.setOnClickListener(clickListener)
+        }
+    }
+
     private fun setAllButtons(): List<Button> {
+        // set all digits
         buttonDigitZero = findViewById(R.id.digitZero)
         buttonDigitOne = findViewById(R.id.digitOne)
         buttonDigitTwo = findViewById(R.id.digitTwo)
@@ -57,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         buttonDigitEight = findViewById(R.id.digitEight)
         buttonDigitNine = findViewById(R.id.digitNine)
 
+        //set all executeButtons
         buttonExecute = findViewById(R.id.execute)
         buttonDivision = findViewById(R.id.division)
         buttonMinus = findViewById(R.id.subtraction)
@@ -64,184 +79,16 @@ class MainActivity : AppCompatActivity() {
         buttonMultiply = findViewById(R.id.multiply)
         buttonOst = findViewById(R.id.remainder)
 
-
         clearExpression = findViewById(R.id.clearCurrentExpression)
         deleteLastDigit = findViewById(R.id.delete)
         addPoint = findViewById(R.id.point)
 
+        //set mainView
         mainTextView = findViewById(R.id.mainShowingView)
 
         return listOf<Button>(buttonDigitOne, buttonDigitTwo, buttonMultiply, buttonPlus, buttonMinus, buttonDivision, buttonExecute, buttonDigitEight,
         buttonDigitSeven, buttonDigitFive, buttonDigitFour, buttonDigitNine, buttonDigitSix, buttonDigitThree, clearExpression, deleteLastDigit, buttonDigitZero,
         buttonOst, addPoint)
-    }
-
-    private fun addSignToValue(sign: Char) {
-        if (currentValue == "0") {
-            currentValue = "$sign"
-            return
-        }
-        if (currentValue == "Infinity") {
-            currentValue = "$sign"
-            return
-        }
-        currentValue += sign
-        mainTextView.text = currentValue
-    }
-
-    private fun isSign(char: Char) = char !in '0'..'9'
-    private fun isSign(string: String?): Boolean {
-        if (string!!.length != 1) {
-            return false
-        }
-        return isSign(string[0]!!)
-    }
-
-    private fun checkForCorrectValue() : Boolean {
-        val n = currentValue.length
-        if (currentValue[n - 1] == '*' || currentValue[n - 1] == '/' || currentValue[n - 1] == '%') {
-            return false
-        }
-        for (i in 1 until n) {
-            if (isSign(currentValue[i]) && isSign(currentValue[i - 1])) {
-                return false
-            }
-        }
-        if (isSign(currentValue[n - 1])) {
-            return false
-        }
-        return true
-    }
-
-    private fun getNumberOfSign(): Int {
-        var result: Int = 0
-        for (el in currentValue) {
-            if (el in '0'..'9') {
-                result++
-            }
-        }
-        return result
-    }
-
-
-    private fun getLeftOperand(array: MutableList<String?>, pos: Int): Double {
-        for (i in pos - 1 downTo 0) {
-            if (array[i] != null) {
-                return array[i]!!.toDouble()
-            }
-        }
-        return 0.0
-    }
-
-    private fun getRightOperand(array: MutableList<String?>, pos: Int): Double {
-        for (i in pos + 1 until array.size) {
-            if (array[i] != null) {
-                return array[i]!!.toDouble()
-            }
-        }
-        return 0.0
-    }
-
-    private fun setLeftOperandToNull(array: MutableList<String?>, pos: Int): Unit {
-        for (i in pos - 1 downTo 0) {
-            if (array[i] != null) {
-                array[i] = null
-                return
-            }
-        }
-    }
-
-    private fun setRightOperandToNull(array: MutableList<String?>, pos: Int): Unit {
-        for (i in pos + 1 until  array.size) {
-            if (array[i] != null) {
-                array[i] = null
-                return
-            }
-        }
-    }
-
-    private fun solveTheValue() {
-        if (currentValue.isEmpty()) {
-            mainTextView.text = "0"
-            return
-        }
-        if (!checkForCorrectValue()) {
-            mainTextView.text = "ERROR"
-            currentValue = ""
-            val errorToast = Toast.makeText(this, "INVALID EXPRESSION", Toast.LENGTH_SHORT)
-            errorToast.show()
-            return
-        }
-        val currentArray: MutableList<String?> = mutableListOf("0")
-        val posOfSignOfFirstPriority: MutableList<Int> = mutableListOf()
-        val posOfSignOfSecondPriority: MutableList<Int> = mutableListOf()
-        if (!isSign(currentValue[0])) {
-            currentArray.add("+")
-            posOfSignOfSecondPriority.add(1)
-        }
-        for (el in currentValue) {
-            if (isSign(el)) {
-                currentArray.add("$el")
-                if (el == '*' || el == '/' || el == '%') {
-                    posOfSignOfFirstPriority.add(currentArray.size - 1)
-                }
-                else {
-                    posOfSignOfSecondPriority.add(currentArray.size - 1)
-                }
-            }
-            else {
-                if (isSign(currentArray[currentArray.size - 1])) {
-                    currentArray.add("$el")
-                    continue
-                }
-                currentArray[currentArray.size - 1] = currentArray[currentArray.size - 1] + el
-            }
-        }
-        for (pos in posOfSignOfFirstPriority) {
-            val leftOperand = getLeftOperand(currentArray, pos);
-            val rightOperand = getRightOperand(currentArray, pos)
-            when(currentArray[pos]) {
-                "*" -> currentArray[pos] = (leftOperand * rightOperand).toString()
-                "/" -> currentArray[pos] = (leftOperand / rightOperand).toString()
-                "%" -> currentArray[pos] = (leftOperand % rightOperand).toString()
-            }
-            setLeftOperandToNull(currentArray, pos)
-            setRightOperandToNull(currentArray, pos)
-        }
-        for (pos in posOfSignOfSecondPriority) {
-            val leftOperand = getLeftOperand(currentArray, pos);
-            val rightOperand = getRightOperand(currentArray, pos)
-            when(currentArray[pos]) {
-                "+" -> currentArray[pos] = (leftOperand + rightOperand).toString()
-                "-" -> currentArray[pos] = (leftOperand - rightOperand).toString()
-            }
-            setLeftOperandToNull(currentArray, pos)
-            setRightOperandToNull(currentArray, pos)
-        }
-        for (el in currentArray) {
-            if (el != null) {
-                currentValue = el
-                mainTextView.text = currentValue
-                break
-            }
-        }
-    }
-
-    private fun deleteLastSign() {
-        if (currentValue.isEmpty()) {
-            return
-        }
-        if (currentValue.length == 1) {
-            currentValue = ""
-            mainTextView.text = "0"
-            return
-        }
-        var result = ""
-        for (i in 0 until currentValue.length - 1) {
-            result += currentValue[i]
-        }
-        currentValue = result
-        mainTextView.text = currentValue
     }
 
     private fun doSomeAction(currentButton: View) {
@@ -263,21 +110,87 @@ class MainActivity : AppCompatActivity() {
             R.id.remainder -> addSignToValue('%')
             R.id.point -> addSignToValue('.')
             R.id.delete -> deleteLastSign()
-            R.id.clearCurrentExpression -> {
-                currentValue = ""
-                mainTextView.text = "0"
-            }
+            R.id.clearCurrentExpression -> clearMainTextView()
             else -> solveTheValue()
         }
     }
 
+    private fun deleteLastSign() {
+        if (currentValue.isEmpty()) {
+            return
+        }
+        if (currentValue.length == 1) {
+            currentValue = ""
+            mainTextView.text = "0"
+            return
+        }
+        currentValue = currentValue.substring(0, currentValue.length - 2)
+        mainTextView.text = currentValue
+    }
 
-    override fun onResume() {
-        super.onResume()
-        val currentButtons = setAllButtons()
-        clickListener = View.OnClickListener { doSomeAction(it) }
-        for (button in currentButtons) {
-            button.setOnClickListener(clickListener)
+    private fun clearMainTextView(): Unit {
+        currentValue = ""
+        mainTextView.text = "0"
+    }
+
+    private fun addSignToValue(sign: Char): Unit {
+        if (currentValue == "0") {
+            currentValue = "$sign"
+            mainTextView.text = currentValue
+            return
+        }
+        currentValue += sign
+        mainTextView.text = currentValue
+    }
+
+    private fun solveTheValue() {
+        if (!checkForCorrect()) {
+            Toast.makeText(this, "INVALID EXPRESSION", Toast.LENGTH_SHORT).show()
+            mainTextView.text = "Error"
+            currentValue = ""
+            return
         }
     }
+
+    private fun checkForCorrect(): Boolean {
+        if (currentValue.isEmpty()) {
+            return true
+        }
+        if (currentValue.length == 1 && (isSign(currentValue[0]) || isPoint(currentValue[0]))) {
+            return false
+        }
+        for ((index, char) in currentValue.withIndex()) {
+            when(index) {
+                0 -> if (!checkForCorrectCharOnTheBorder(char)) return false
+                currentValue.length - 1 -> if (!checkForCorrectCharOnTheBorder(char) || char == '+' || char == '-') return false
+                else -> if (!checkForCorrectCharInTheMiddle(currentValue[index - 1], char, currentValue[index + 1])) return false
+            }
+        }
+        return true
+    }
+
+    private fun checkForCorrectCharOnTheBorder(char: Char): Boolean {
+        if (isPoint(char)) {
+            return false
+        }
+        if (char == '*' || char == '/' || char == '%') {
+            return false
+        }
+        return true
+    }
+
+    private fun checkForCorrectCharInTheMiddle(leftChar: Char, middleChar: Char, rightChar: Char): Boolean {
+        if (isPoint(middleChar) && !isDigit(leftChar) && !isDigit(rightChar)) {
+            return false
+        }
+        if (isSign(middleChar) && !isDigit(leftChar) && isDigit(rightChar)) {
+            return false
+        }
+        return true
+    }
+
+    private fun isDigit(char: Char): Boolean = char in '0'..'9'
+    private fun isPoint(char: Char): Boolean = char == '.'
+    private fun isSign(char: Char): Boolean = !isDigit(char) && !isPoint(char)
+
 }
