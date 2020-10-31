@@ -2,6 +2,7 @@ package com.example.calculator
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.widget.TextViewCompat
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val currentButtons = setAllButtons()
+        TextViewCompat.setAutoSizeTextTypeWithDefaults(mainTextView, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
         clickListener = View.OnClickListener { doSomeAction(it) }
         for (button in currentButtons) {
             button.setOnClickListener(clickListener)
@@ -143,6 +145,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addSignToValue(sign: Char): Unit {
+        if (currentValue.length > 28) {
+            Toast.makeText(this, "Too large Expression", Toast.LENGTH_SHORT).show()
+            return
+        }
         if (currentValue == "0") {
             if (isDigit(sign)) {
                 currentValue = "$sign"
@@ -182,19 +188,19 @@ class MainActivity : AppCompatActivity() {
         getResult(currentExpression)
     }
 
-    private fun getLefOperand(expression: MutableList<String?>, index: Int): Int {
+    private fun getLefOperand(expression: MutableList<String?>, index: Int): Double {
         for (pos in index - 1 downTo 0) {
             if (expression[pos] != null) {
-                return expression[pos]!!.toInt()
+                return expression[pos]!!.toDouble()
             }
         }
         throw Exception("Something went wrong")
     }
 
-    private fun getRightOperand(expression: MutableList<String?>, index: Int): Int {
+    private fun getRightOperand(expression: MutableList<String?>, index: Int): Double {
         for (pos in index + 1 until expression.size) {
             if (expression[pos] != null) {
-                return expression[pos]!!.toInt()
+                return expression[pos]!!.toDouble()
             }
         }
         throw Exception("Something went wrong")
@@ -227,13 +233,13 @@ class MainActivity : AppCompatActivity() {
             when(expression[pos]) {
                 "*" -> expression[pos] = (leftOperand * rightOperand).toString()
                 "/" -> {
-                    if (rightOperand == 0) {
+                    if (rightOperand == 0.0) {
                         throw ArithmeticException("Division by zero")
                     }
                     expression[pos] = (leftOperand / rightOperand).toString()
                 }
                 "%" -> {
-                    if (rightOperand == 0) {
+                    if (rightOperand == 0.0) {
                         throw ArithmeticException("Division by zero")
                     }
                     expression[pos] = (leftOperand % rightOperand).toString()
@@ -249,6 +255,12 @@ class MainActivity : AppCompatActivity() {
     private fun getResult(expression: MutableList<String?>) {
         for (el in expression) {
             if (el != null) {
+                val value = el.toDouble()
+                if (value == value.toInt().toDouble()) {
+                    currentValue = el.toDouble().toInt().toString()
+                    mainTextView.text = currentValue
+                    return
+                }
                 currentValue = el
                 mainTextView.text = el
                 return
@@ -314,6 +326,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun isDigit(char: Char): Boolean = char in '0'..'9'
     private fun isPoint(char: Char): Boolean = char == '.'
-    private fun isSign(char: Char): Boolean = !isDigit(char) && !isPoint(char)
+    private fun isSign(char: Char): Boolean = !isDigit(char) && !isPoint(char) && !isE(char)
+    private fun isE(char: Char): Boolean = char == 'E'
 
 }
