@@ -111,7 +111,16 @@ class MainActivity : AppCompatActivity() {
             R.id.point -> addSignToValue('.')
             R.id.delete -> deleteLastSign()
             R.id.clearCurrentExpression -> clearMainTextView()
-            else -> solveTheValue()
+            else -> {
+                try {
+                    solveTheValue()
+                }
+                catch (e: Exception) {
+                    currentValue = ""
+                    mainTextView.text = "Error"
+                    Toast.makeText(this, "${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -120,24 +129,26 @@ class MainActivity : AppCompatActivity() {
             return
         }
         if (currentValue.length == 1) {
-            currentValue = ""
+            currentValue = "0"
             mainTextView.text = "0"
             return
         }
-        currentValue = currentValue.substring(0, currentValue.length - 2)
+        currentValue = currentValue.substring(0, currentValue.length - 1)
         mainTextView.text = currentValue
     }
 
     private fun clearMainTextView(): Unit {
-        currentValue = ""
+        currentValue = "0"
         mainTextView.text = "0"
     }
 
     private fun addSignToValue(sign: Char): Unit {
         if (currentValue == "0") {
-            currentValue = "$sign"
-            mainTextView.text = currentValue
-            return
+            if (isDigit(sign)) {
+                currentValue = "$sign"
+                mainTextView.text = currentValue
+                return
+            }
         }
         currentValue += sign
         mainTextView.text = currentValue
@@ -146,9 +157,121 @@ class MainActivity : AppCompatActivity() {
     private fun solveTheValue() {
         if (!checkForCorrect()) {
             Toast.makeText(this, "INVALID EXPRESSION", Toast.LENGTH_SHORT).show()
-            mainTextView.text = "Error"
+            mainTextView.text = resources.getString(R.string.mainError)
             currentValue = ""
             return
+        }
+        val currentExpression = mutableListOf<String?>("0")
+        val posOfFirstPrioritySign = mutableListOf<Int>()
+        val posOfSecondPrioritySign = mutableListOf<Int>()
+        if (!isSign(currentValue[0])) {
+            currentExpression.add("+")
+            posOfSecondPrioritySign.add(1)
+        }
+        for (char in currentValue) {
+            if (char == '*' || char == '/' || char == '%') {
+                posOfFirstPrioritySign.add(currentExpression.size)
+            }
+            if (char == '+' || char == '-') {
+                posOfSecondPrioritySign.add(currentExpression.size)
+            }
+            treatTheChar(currentExpression, char)
+        }
+        calculateExpression(currentExpression, posOfFirstPrioritySign)
+        calculateExpression(currentExpression, posOfSecondPrioritySign)
+        getResult(currentExpression)
+    }
+
+    private fun getLefOperand(expression: MutableList<String?>, index: Int): Int {
+        for (pos in index - 1 downTo 0) {
+            if (expression[pos] != null) {
+                return expression[pos]!!.toInt()
+            }
+        }
+        throw Exception("Something went wrong")
+    }
+
+    private fun getRightOperand(expression: MutableList<String?>, index: Int): Int {
+        for (pos in index + 1 until expression.size) {
+            if (expression[pos] != null) {
+                return expression[pos]!!.toInt()
+            }
+        }
+        throw Exception("Something went wrong")
+    }
+
+    private fun deleteLeftOperand(expression: MutableList<String?>, index: Int) {
+        for (pos in index - 1 downTo 0) {
+            if (expression[pos] != null) {
+                expression[pos] = null
+                return
+            }
+        }
+        throw Exception("Something went wrong")
+    }
+
+    private fun deleteRightOperand(expression: MutableList<String?>, index: Int) {
+        for (pos in index + 1 until expression.size) {
+            if (expression[pos] != null) {
+                expression[pos] = null
+                return
+            }
+        }
+        throw Exception("Something went wrong")
+    }
+
+    private fun calculateExpression(expression: MutableList<String?>, posOfSign: MutableList<Int>) {
+        for (pos in posOfSign) {
+            val leftOperand = getLefOperand(expression, pos)
+            val rightOperand = getRightOperand(expression, pos)
+            when(expression[pos]) {
+                "*" -> expression[pos] = (leftOperand * rightOperand).toString()
+                "/" -> {
+                    if (rightOperand == 0) {
+                        throw ArithmeticException("Division by zero")
+                    }
+                    expression[pos] = (leftOperand / rightOperand).toString()
+                }
+                "%" -> {
+                    if (rightOperand == 0) {
+                        throw ArithmeticException("Division by zero")
+                    }
+                    expression[pos] = (leftOperand % rightOperand).toString()
+                }
+                "+" -> expression[pos] = (leftOperand + rightOperand).toString()
+                "-" -> expression[pos] = (leftOperand - rightOperand).toString()
+            }
+            deleteLeftOperand(expression, pos)
+            deleteRightOperand(expression, pos)
+        }
+    }
+
+    private fun getResult(expression: MutableList<String?>) {
+        for (el in expression) {
+            if (el != null) {
+                currentValue = el
+                mainTextView.text = el
+                return
+            }
+        }
+        throw Exception("Something went wrong")
+    }
+
+    private fun treatTheChar(expression: MutableList<String?>, char: Char): Unit {
+        if (isSign(char)) {
+            expression.add(char.toString())
+            return
+        }
+        val n = expression.size
+        if (isPoint(char)) {
+            expression[n - 1] = expression[n - 1] + char
+            return
+        }
+        if (expression[n - 1] == "+" || expression[n - 1] == "-" || expression[n - 1] == "*" || expression[n - 1] == "/" || expression[n - 1] == "%") {
+            expression.add(char.toString())
+        }
+        else {
+            expression[n - 1] = expression[n - 1] + char
         }
     }
 
